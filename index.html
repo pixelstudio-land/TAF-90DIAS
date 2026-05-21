@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Protocolo TAF | Do Zero à Aprovação</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    
+    <div class="app-wrapper">
+        <!-- LUZES DE FUNDO (GLASSMORPHISM POP) -->
+        <div class="ambient-glow blue"></div>
+        <div class="ambient-glow cyan"></div>
+        <div class="ambient-glow green"></div>
+
+        <!-- TELA DE LOGIN -->
+        <section id="screen-login" class="screen active">
+            <div class="login-container glass">
+                <div class="logo-area">
+                    <div class="tactical-logo">
+                        <span class="logo-top">PROTOCOLO</span>
+                        <span class="logo-main">TAF</span>
+                        <div class="logo-line"></div>
+                    </div>
+                    <p style="font-size: 14px; font-weight:600; color:var(--text-muted); margin-bottom: 20px;">DO ZERO À APROVAÇÃO</p>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fa-solid fa-envelope"></i> E-MAIL</label>
+                    <input type="email" id="login-email" placeholder="seu@email.com">
+                </div>
+                <div class="input-group">
+                    <label><i class="fa-solid fa-key"></i> SENHA</label>
+                    <input type="password" id="login-pass" placeholder="******">
+                </div>
+                
+                <button class="btn-primary" onclick="app.login()" style="margin-top: 10px;">
+                    <i class="fa-solid fa-right-to-bracket"></i> ENTRAR NA ÁREA
+                </button>
+                
+                <p style="margin-top: 20px; font-size: 13px; color: var(--text-muted);">
+                    Problemas no acesso? 
+                    <a href="https://wa.me/5511910620140" target="_blank" style="color:var(--success); text-decoration: none; font-weight:600;">
+                        <i class="fa-brands fa-whatsapp"></i> Suporte
+                    </a>
+                </p>
+            </div>
+        </section>
+
+        <!-- TELA DE ONBOARDING -->
+        <section id="screen-onboarding" class="screen">
+            <div style="text-align:center; margin-bottom: 30px; margin-top:20px;">
+                <h2 style="font-family:var(--font-heading); color: var(--primary); font-size: 32px; letter-spacing: 2px;">AVALIAÇÃO INICIAL</h2>
+                <p style="color: var(--text-muted); font-size: 14px;">Precisamos disso para gerar seu Protocolo de 90 Dias.</p>
+            </div>
+            
+            <form id="onboarding-form" class="glass" style="padding: 30px; border-radius: 12px;" onsubmit="event.preventDefault(); app.processOnboarding();">
+                <div class="input-group">
+                    <label><i class="fa-solid fa-stopwatch"></i> CORRIDA 1KM (MINUTOS)</label>
+                    <input type="number" id="test-run" placeholder="Ex: 6.0" step="0.1" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fa-solid fa-hand-fist"></i> FLEXÕES (MÁX EM 1 MIN)</label>
+                    <input type="number" id="test-pushups" placeholder="Ex: 20" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fa-solid fa-person-biking"></i> ABDOMINAIS (MÁX EM 1 MIN)</label>
+                    <input type="number" id="test-abs" placeholder="Ex: 30" required>
+                </div>
+                
+                <button type="submit" class="btn-primary" style="margin-top: 25px;">GERAR MINHA MISSÃO <i class="fa-solid fa-arrow-right"></i></button>
+            </form>
+        </section>
+
+        <!-- TELA DASHBOARD PRINCIPAL -->
+        <div id="screen-dashboard" class="screen">
+            <div class="app-header">
+                <div class="user-info">
+                    <div class="user-avatar-btn" id="header-avatar" onclick="app.openModal('modal-profile')" style="background-image:url('https://ui-avatars.com/api/?name=Recruta&background=3b82f6&color=fff');"></div>
+                    <div>
+                        <span class="rank-badge" id="user-rank">NÍVEL</span>
+                        <h3 style="color:var(--text-main); font-size:18px;"><span id="user-level-display" style="color:var(--text-main)">Recruta</span></h3>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="settings-btn" onclick="app.toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
+                    <button class="settings-btn" onclick="app.logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>
+            </div>
+
+            <div class="progress-labels">
+                <span>PROCESSO GLOBAL</span>
+                <span id="progress-text">DIA 1 DE 90</span>
+            </div>
+            <div class="progress-bar-bg" style="margin-bottom: 25px;">
+                <div class="progress-bar-fill" id="global-progress" style="width: 1%"></div>
+            </div>
+
+            <div class="screen-content-wrapper">
+                <div class="main-column">
+                    <div class="community-launcher" onclick="app.openSocial()">
+                        <div class="community-launcher-content">
+                            <div class="co-icon"><i class="fa-solid fa-users-viewfinder"></i></div>
+                            <div>
+                                <h4 style="font-family:var(--font-heading); color:var(--text-main); font-size:16px;">ALOJAMENTO MILITAR</h4>
+                                <p style="font-size:11px; color:var(--text-muted);">Comunidade Global e Ranking</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
+                    </div>
+
+                    <div class="mission-card" onclick="app.openWorkout()">
+                        <div class="mission-status pulse"></div>
+                        <div class="mission-content">
+                            <span class="mission-label">ORDEM DO DIA PENDENTE</span>
+                            <h2 id="today-workout-title">MISSÃO #01</h2>
+                            <p id="today-workout-desc">Carregando...</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); font-size: 20px;"></i>
+                    </div>
+
+                    <div class="glass motivation-banner" style="padding: 25px; border-radius: 16px; margin-bottom: 25px; text-align: center;">
+                        <i class="fa-solid fa-quote-left" style="color:var(--secondary); font-size:24px; margin-bottom: 10px;"></i>
+                        <p id="daily-quote" style="font-size: 14px; font-weight:500; color:var(--text-main); font-style: italic;">"A dor é a fraqueza saindo do corpo."</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-column tools-grid">
+                    <div class="tool-card" onclick="app.openModal('modal-nutrition')">
+                        <i class="fa-solid fa-utensils"></i><span>NUTRIÇÃO</span>
+                    </div>
+                    <div class="tool-card" onclick="app.openModal('modal-intro')">
+                        <i class="fa-solid fa-play"></i><span>AULAS DE BASE</span>
+                    </div>
+                    <div class="tool-card" onclick="app.openModal('modal-calc')">
+                        <i class="fa-solid fa-stopwatch"></i><span>CALC. TAF</span>
+                    </div>
+                    <div class="tool-card" onclick="app.openModal('modal-suporte')">
+                        <i class="fa-brands fa-whatsapp"></i><span>SUPORTE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TELA MASTER ADMIN -->
+        <div id="screen-admin" class="screen" style="background:var(--bg-dark);">
+            <div class="app-header">
+                <div class="user-info">
+                    <span class="rank-badge" style="color:var(--primary); border-color:var(--primary); background:rgba(59,130,246,0.1)">OFICIAL SUPERIOR</span>
+                    <h3 style="color:var(--text-main);">MESTRE RICARDO</h3>
+                </div>
+                <div class="header-actions">
+                    <button class="settings-btn" onclick="app.toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon-admin"></i></button>
+                    <button class="settings-btn" onclick="app.logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>
+            </div>
+
+            <!-- ANALYTICS MESTRE -->
+            <div id="admin-analytics" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:10px; margin-bottom: 25px;">
+                <div class="glass" style="padding:15px; text-align:center; border-radius:10px; border-top: 3px solid var(--primary);">
+                    <h3 id="metric-total" style="font-size:24px; color:var(--text-main); font-family:var(--font-heading);"><i class="fa-solid fa-spinner fa-spin" style="font-size:14px"></i></h3>
+                    <p style="font-size:10px; color:var(--text-muted); font-weight:bold;">ALUNOS</p>
+                </div>
+                <div class="glass" style="padding:15px; text-align:center; border-radius:10px; border-top: 3px solid var(--success);">
+                    <h3 id="metric-ativos" style="font-size:24px; color:var(--text-main); font-family:var(--font-heading);"><i class="fa-solid fa-spinner fa-spin" style="font-size:14px"></i></h3>
+                    <p style="font-size:10px; color:var(--text-muted); font-weight:bold;">TROPAS ATIVAS</p>
+                </div>
+                <div class="glass" style="padding:15px; text-align:center; border-radius:10px; border-top: 3px solid var(--danger);">
+                    <h3 id="metric-evasao" style="font-size:24px; color:var(--text-main); font-family:var(--font-heading);"><i class="fa-solid fa-spinner fa-spin" style="font-size:14px"></i></h3>
+                    <p style="font-size:10px; color:var(--text-muted); font-weight:bold;">EVASÃO (>3d)</p>
+                </div>
+            </div>
+
+            <h4 class="section-title" style="color:var(--primary); font-family:var(--font-heading); font-size:18px; margin-bottom:15px; margin-top:10px;"><i class="fa-solid fa-pen-to-square"></i> EDIÇÃO DE DOUTRINA (TREINOS)</h4>
+            <div class="glass" style="padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid var(--primary);">
+               <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">Baixe um treino do banco para editá-lo.</p>
+               <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                   <select id="edit-wk-search-nivel" style="flex:1; padding:15px; background:var(--bg-card-solid); color:var(--text-main); border-radius:8px; border:var(--border-soft);">
+                       <option value="INICIANTE">INICIANTE</option>
+                       <option value="INTERMEDIARIO">INTERMEDIÁRIO</option>
+                       <option value="AVANCADO">AVANÇADO</option>
+                   </select>
+                   <input type="number" id="edit-wk-search-dia" placeholder="Dia" style="width:80px; padding:15px; border:var(--border-soft); background:var(--bg-card-solid); color:var(--text-main);">
+                   <button class="btn-primary" onclick="app.adminLoadWorkout()" style="width: auto; padding: 0 20px;"><i class="fa-solid fa-download"></i></button>
+               </div>
+               
+               <div id="admin-workout-editor" style="display:none; flex-direction:column; gap:12px;">
+                   <input type="hidden" id="edit-wk-id">
+                   
+                   <label style="font-size:11px; color:var(--text-muted); font-weight:bold;">NOME DA MISSÃO</label>
+                   <input type="text" id="edit-wk-titulo" style="border:var(--border-soft); background:var(--bg-card-solid); color:var(--text-main);">
+                   
+                   <label style="font-size:11px; color:var(--text-muted); font-weight:bold;">FOCO</label>
+                   <input type="text" id="edit-wk-foco" style="border:var(--border-soft); background:var(--bg-card-solid); color:var(--text-main);">
+                   
+                   <label style="font-size:11px; color:var(--text-muted); font-weight:bold;">AQUECIMENTO (Pule de linha para novo item)</label>
+                   <textarea id="edit-wk-warmup" rows="3" style="width:100%; padding:15px; border-radius:8px; background:var(--bg-card-solid); color:var(--text-main); border:var(--border-soft); font-family:var(--font-body);"></textarea>
+                   
+                   <label style="font-size:11px; color:var(--text-muted); font-weight:bold;">PRINCIPAL (Pule de linha para novo exercício)</label>
+                   <textarea id="edit-wk-main" rows="6" style="width:100%; padding:15px; border-radius:8px; background:var(--bg-card-solid); color:var(--text-main); border:var(--border-soft); font-family:var(--font-body);"></textarea>
+                   
+                   <button class="btn-success" onclick="app.adminSaveWorkout()" style="margin-top: 10px;">ENVIAR UPDATE P/ NUVEM</button>
+               </div>
+            </div>
+
+            <h4 class="section-title" style="color:var(--success); font-family:var(--font-heading); font-size:18px; margin-bottom:15px;"><i class="fa-solid fa-brain"></i> MÁQUINA DE MINDSET</h4>
+            <div class="glass" style="padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid var(--success);">
+                <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">Programe pílulas diárias de longo prazo (Dias 1 a 300).</p>
+                <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                   <input type="number" id="edit-cnt-search-dia" placeholder="Dia Alvo (Ex: 82)" style="flex:1; padding:15px; background:var(--bg-card-solid); color:var(--text-main); border-radius:8px; border:var(--border-soft);">
+                   <button class="btn-success" onclick="app.adminLoadContent()" style="width: auto; padding: 0 20px;"><i class="fa-solid fa-download"></i></button>
+                </div>
+                
+                <div id="admin-content-editor" style="display:none; flex-direction:column; gap:12px;">
+                   <label style="font-size:11px; color:var(--text-muted); font-weight:bold;">TÍTULO DO MINDSET</label>
+                   <input type="text" id="edit-cnt-mind-title" placeholder="Ex: A Dor é Passageira" style="border:var(--border-soft); background:var(--bg-card-solid); color:var(--text-main);">
+                   
+                   <label style="font-size:11px; color:var(--text-muted); font-weight:bold;">TEXTO MOTIVACIONAL DO DIA</label>
+                   <textarea id="edit-cnt-mind-text" rows="3" style="width:100%; padding:15px; border-radius:8px; background:var(--bg-card-solid); color:var(--text-main); border:var(--border-soft);"></textarea>
+                   
+                   <!-- Removida área de nutrição estática a pedido de simplificação / Não pedida -->
+                   <input type="hidden" id="edit-cnt-nutri-title">
+                   <input type="hidden" id="edit-cnt-nutri-text">
+                   
+                   <button class="btn-success" onclick="app.adminSaveContent()" style="margin-top: 10px;">SALVAR CONTEÚDO NO DIA</button>
+               </div>
+            </div>
+
+            <h4 class="section-title" style="color:var(--secondary); font-family:var(--font-heading); font-size:18px; margin-bottom:15px;"><i class="fa-solid fa-users-viewfinder"></i> BUSCAR RECRUTAS</h4>
+            <div style="display:flex; gap:10px; margin-bottom: 25px;">
+               <input type="text" id="admin-search" placeholder="E-mail ou nome..." style="flex:1; padding: 16px; background:var(--bg-card-solid); color:var(--text-main); border:var(--border-soft);">
+               <button class="btn-primary" onclick="app.adminSearchUsers()" style="width:65px; padding:0; height:auto; box-shadow:none;"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <div id="admin-user-list" style="display: flex; flex-direction: column; gap:12px;"></div>
+            
+            <h4 class="section-title" style="color:var(--danger); font-family:var(--font-heading); font-size:18px; margin-top:35px; margin-bottom:15px;"><i class="fa-solid fa-person-falling"></i> TROPAS EM EVASÃO (REMARKETING)</h4>
+            <div id="admin-remarketing-list" style="display: flex; flex-direction: column; gap:12px; margin-bottom: 30px;">
+                <p style="color:var(--text-muted); font-size:12px;">Processando desertores dos últimos dias...</p>
+            </div>
+        </div>
+
+        <!-- MODAL DO TREINO DO DIA -->
+        <div id="modal-workout" class="modal">
+            <div class="modal-content-wrap">
+                <div class="modal-header">
+                    <button class="back-btn" onclick="app.closeModal('modal-workout')"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h3 id="modal-title" style="color:var(--text-main); font-family:var(--font-heading);">TREINO DO DIA</h3>
+                </div>
+                
+                <div class="workout-section" style="margin-bottom: 20px;">
+                    <h4 style="color:var(--primary); font-size:15px; margin-bottom:15px;"><i class="fa-solid fa-fire"></i> FASE 1: AQUECIMENTO</h4>
+                    
+                    <div id="warmup-timer-container" class="glass" style="padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; border: 1px solid var(--primary);">
+                        <div style="font-size: 32px; font-weight: 800; font-family: var(--font-heading); color: var(--text-main); letter-spacing: 2px;" id="warmup-clock">10:00</div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Protocolo Fixo Obrigatório</p>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button class="btn-primary" id="btn-timer-play" onclick="app.toggleWarmupTimer()" style="width: auto; padding: 8px 20px; font-size: 14px; border-radius: 20px;"><i class="fa-solid fa-play"></i> INICIAR</button>
+                            <button class="settings-btn" id="btn-timer-reset" onclick="app.resetWarmupTimer()" style="border-radius: 8px; width: 40px; height: 40px; border: 1px solid var(--border-soft);"><i class="fa-solid fa-rotate-right"></i></button>
+                        </div>
+                    </div>
+
+                    <ul id="warmup-list" style="list-style:none; padding:15px; background:var(--bg-card-solid); border:var(--border-soft); border-radius:10px; color:var(--text-muted); font-size:14px;"></ul>
+                </div>
+                
+                <div class="workout-section main-set">
+                    <h4 style="color:var(--danger); font-size:15px; margin-bottom:15px;"><i class="fa-solid fa-dumbbell"></i> FASE 2: MISSÃO PRINCIPAL</h4>
+                    <div id="main-list-container"></div>
+                </div>
+                
+                <button class="btn-success" id="btn-complete-mission" onclick="app.completeMission()" style="margin-top:40px; margin-bottom: 20px;">
+                    <i class="fa-solid fa-check-double"></i> FINALIZAR TREINO DO DIA
+                </button>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <p style="font-size: 11px; color: var(--text-muted); cursor: pointer; text-decoration: underline;" onclick="app.undoMission()"><i class="fa-solid fa-rotate-left"></i> Ops! Concluí por acidente hoje. (Desfazer)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL CALCULADORA -->
+        <div id="modal-calc" class="modal">
+            <div class="modal-content-wrap">
+                <div class="modal-header">
+                    <button class="back-btn" onclick="app.closeModal('modal-calc')"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h3 style="color:var(--text-main); font-family:var(--font-heading);">SIMULADOR TAF</h3>
+                </div>
+                
+                <div class="glass" style="padding: 20px; border-radius:12px; margin-bottom:20px;">
+                    <div class="input-group"><label>FLEXÕES DE BRAÇO</label><input type="number" id="calc-flex"></div>
+                    <div class="input-group"><label>ABDOMINAIS (1 MIN)</label><input type="number" id="calc-abs"></div>
+                    <div class="input-group"><label>TEMPO 2KM (MINUTOS)</label><input type="number" id="calc-run" placeholder="Ex: 11.5"></div>
+                    <button class="btn-primary" onclick="app.calculateScore()" style="margin-top: 10px;">GERAR NOTA DO TAF</button>
+                </div>
+                
+                <div id="calc-result" class="result-box" style="display:none; text-align:center;">
+                    <p style="color:var(--text-muted); font-size:12px; letter-spacing:1px;">RESULTADO ESTIMADO</p>
+                    <h2 id="score-text">--</h2>
+                    <div style="width: 50px; height:2px; background: rgba(255,255,255,0.2); margin: 10px auto;"></div>
+                    <p id="score-status">--</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL EDITAR USUÁRIO (ADMIN) -->
+        <div id="modal-edit-user" class="modal">
+            <div class="modal-content-wrap">
+                <div class="modal-header">
+                    <button class="back-btn" onclick="app.closeModal('modal-edit-user')"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h3 style="color:var(--text-main); font-family:var(--font-heading);">EDITAR RECRUTA</h3>
+                </div>
+                <div class="glass" style="padding: 20px; border-radius: 12px; margin-top:20px;">
+                    <input type="hidden" id="edit-user-id">
+                    
+                    <div class="input-group">
+                        <label>Dia Atual da Missão (1 a 90)</label>
+                        <input type="number" id="edit-user-dia" min="1" max="90" style="border:var(--border-soft); background:var(--bg-card-solid); color:var(--text-main);">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Nível de Aptidão Físico</label>
+                        <select id="edit-user-nivel" style="border:var(--border-soft); background:var(--bg-card-solid); color:var(--text-main); width:100%; padding:15px; border-radius:8px; margin-bottom: 25px;">
+                            <option value="INICIANTE">INICIANTE</option>
+                            <option value="INTERMEDIARIO">INTERMEDIÁRIO</option>
+                            <option value="AVANCADO">AVANÇADO</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="app.adminSaveUser()">SALVAR FICHA</button>
+                    
+                    <div style="height:1px; background:var(--border-soft); margin: 25px 0;"></div>
+                    <label style="font-size:11px; color:var(--danger); font-weight:bold; display:block; margin-bottom:10px; text-transform:uppercase;">Moderação Punitiva</label>
+                    <button class="btn-primary" onclick="app.adminClearAvatar()" style="background:var(--danger); font-size:11px; padding:12px; margin-bottom:5px;"><i class="fa-solid fa-image"></i> DELETAR FOTO DO ROSTO DESTE RECRUTA</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL NUTRIÇÃO (RESTAURADO) -->
+        <div id="modal-nutrition" class="modal">
+             <div class="modal-content-wrap">
+                 <div class="modal-header">
+                    <button class="back-btn" onclick="app.closeModal('modal-nutrition')"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h3 style="color:var(--text-main); font-family:var(--font-heading);">MANUAL DE NUTRIÇÃO</h3>
+                </div>
+                
+                 <div class="glass" style="border-left:4px solid #3B82F6; padding: 20px; border-radius: 12px; margin-bottom:15px;">
+                    <h4 style="color:#3B82F6; margin-bottom:10px;"><i class="fa-solid fa-droplet"></i> HIDRATAÇÃO MÁXIMA</h4>
+                    <p style="font-size:13px; color:var(--text-muted); line-height:1.5;"><strong>Cálculo Base:</strong> Seu Peso x 45ml = Meta de Água.<br>
+                    <em>(Ex: 80kg x 45 = 3,6 Litros/dia).</em> Obrigatório bater a meta.</p>
+                 </div>
+                 
+                 <div class="glass" style="border-left:4px solid #EF4444; padding: 20px; border-radius: 12px;">
+                    <h4 style="color:#EF4444; margin-bottom:10px;"><i class="fa-solid fa-bolt"></i> O COMBUSTÍVEL</h4>
+                    <p style="font-size:13px; color:var(--text-muted); line-height:1.5;"><strong>Pré-Treino (40 min antes):</strong><br> Carboidrato rápido: 1 Banana + Mel ou Doce de Leite.</p>
+                    <div style="height:1px; background:rgba(255,255,255,0.1); margin: 15px 0;"></div>
+                    <p style="font-size:13px; color:var(--text-muted); line-height:1.5;"><strong>Pós-Treino (Janela de Recup):</strong><br> Proteína Alta + Carbo Complexo: Arroz+Feijão+Frango ou Iogurte Integral c/ Whey.</p>
+                 </div>
+            </div>
+        </div>
+
+        <!-- MODAL DO VÍDEO DE APRESENTAÇÃO (Mestre Ricardo) -->
+        <div id="modal-intro" class="modal">
+            <div class="modal-content-wrap">
+                <div class="modal-header">
+                    <button class="back-btn" onclick="app.closeModal('modal-intro')"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h3 style="color:var(--text-main); font-family:var(--font-heading);">A BASE (MENSAGEM DO MESTRE)</h3>
+                </div>
+                
+                <div class="glass" style="padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="color:var(--text-main); font-size:14px; margin-bottom:15px; text-align:center;"><i class="fa-solid fa-graduation-cap"></i> AULAS TEÓRICAS E CONCEITOS</h4>
+                    
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>1. A Forja do Protocolo TAF <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=47996200-cb78-491a-bd8f-7e19be96b912" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+                    
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>2. Avaliação Técnica <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=63ab45e1-87c2-46b0-847b-f3bb91e7b4b5" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>3. Introdução e Organização <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=45f26c65-63dd-4fa6-994f-0dc81e83e15e" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>4. O que Realmente Traz o Progresso <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=d67df0d8-c759-4020-9733-57cb80b583bf" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>5. Primeira Semana (Fase Iniciante) <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=e80d917d-2656-484d-a051-15d4f4a11e50" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>6. Programação e Estrutura dos Treinos <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=bd6b0f71-8bc6-4ad7-8a97-fefa3ca1d142" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="glass" style="padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="color:#00D0FF; font-size:14px; margin-bottom:15px; text-align:center;"><i class="fa-solid fa-play"></i> FASE 1: SEMANA DE TREINO</h4>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Segunda-feira: Treino Específico + Natação <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=65ec0766-0983-4c43-9927-99948f60a7c5" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Terça-feira: Fortalecimento <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=7dfa6c90-edbf-4d1b-83e7-acd4d8536268" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Quarta-feira: Treino Específico + Natação <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=65ec0766-0983-4c43-9927-99948f60a7c5" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Quinta-feira: Fortalecimento <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=372e01ae-9424-4018-ad0e-4f223feea946" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Sexta-feira: Treino Específico + Natação <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=3d9c1519-6e9e-46ae-88b8-0a6d21b6e330" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Sábado: Fortalecimento <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=f8f46d26-b34b-4c14-ae47-7e56e67c716f" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="glass" style="padding: 15px; border-radius: 12px;">
+                    <h4 style="color:var(--primary); font-size:14px; margin-bottom:15px; text-align:center;"><i class="fa-solid fa-person-running"></i> ENCICLOPÉDIA DOS EXERCÍCIOS</h4>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Afundo <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=021e5428-9295-4374-a295-ec44bee084c7" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Dead Bug <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=8d39c7e4-3a21-452d-a834-c68333c3bc9f" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Ponte <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=ad6d3467-30e4-46a5-ac31-cd723205dd7e" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Prancha <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=0f1f214e-a4a8-475a-ad88-152757559bc0" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Stiff <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=ecfe5e0e-c33f-48f9-96b2-d43ad2c697ef" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Respiração Bilateral <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=3f1445e8-646f-4b59-8f52-25cd6453d698" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Barra Fixa <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=5efde728-906e-4e7a-be24-e46fea6b4b41" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Abd. Remador <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=b0b4d111-3e3f-45da-a471-61b4acb464a5" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Agachamento <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=dd754e0e-3151-4f08-ad0f-ef45708539fd" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Isometria na Barra <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=19466e14-9e48-4358-b892-e2d1b4b03373" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Remada Curvada <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=612b180a-f324-413e-8568-3cbdab82b08a" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Supino <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=ecd99f54-a1fe-4cdf-a1fb-bd7a43c13590" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+
+                    <details class="exercise-detail" style="margin-bottom:8px;">
+                        <summary>Mecânica: Flexão de Braço <i class="fa-solid fa-chevron-down toggle-icon" style="float:right"></i></summary>
+                        <div class="technique-box">
+                            <div class="video-container horizontal"><iframe src="https://player-vz-7bedc2f5-98b.tv.pandavideo.com.br/embed/?v=b7dd4c41-61e7-413d-b0e6-0200b6206cc2" allowfullscreen></iframe></div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL IDENTIDADE MILITAR (PERFIL AVATAR) -->
+        <div id="modal-profile" class="modal">
+            <div class="modal-content-wrap">
+                <div class="modal-header">
+                    <button class="back-btn" onclick="app.closeModal('modal-profile')"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h3 style="color:var(--text-main); font-family:var(--font-heading);">IDENTIDADE MILITAR</h3>
+                </div>
+                
+                <div class="glass" style="padding: 30px 20px; border-radius:12px; margin-bottom:20px; text-align:center;">
+                    <div id="profile-avatar-preview" style="width:100px; height:100px; border-radius:50%; background-color:var(--bg-dark); border:3px solid var(--primary); margin:0 auto 15px auto; background-size:cover; background-position:center;"></div>
+                    
+                    <label for="avatar-upload" class="btn-primary" style="display:inline-block; padding:10px 20px; font-size:12px; border-radius:20px; margin-bottom: 25px; width:auto;">
+                        <i class="fa-solid fa-camera"></i> ALTERAR FOTO
+                    </label>
+                    <input type="file" id="avatar-upload" accept="image/*" style="display:none;" onchange="app.handleAvatarBase64(event)">
+                    <p style="font-size:10px; color:var(--text-muted); margin-top:-15px; margin-bottom:20px;">Use uma foto quadrada.</p>
+                    
+                    <div class="input-group">
+                        <label>SEU NOME DE GUERRA</label>
+                        <input type="text" id="profile-nome" style="text-align:center;">
+                    </div>
+                    
+                    <button class="btn-success" onclick="app.saveProfileInfo()" style="margin-top: 10px;" id="btn-save-profile">GRAVAR NO BANCO <i class="fa-solid fa-cloud-arrow-up"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL ALOJAMENTO (SOCIAL & RANKING) -->
+        <div id="modal-social" class="modal">
+            <div class="modal-content-wrap">
+                <div class="modal-header">
+                    <button class="back-btn" onclick="app.closeModal('modal-social')"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h3 style="color:var(--text-main); font-family:var(--font-heading);">QUARTEL GENERAL</h3>
+                </div>
+
+                <div class="social-tabs">
+                    <div class="s-tab active" id="tab-feed-btn" onclick="app.switchSocialTab('feed')">MURAL DE LUTA</div>
+                    <div class="s-tab" id="tab-rank-btn" onclick="app.switchSocialTab('rank')">RANKING MUNDIAL</div>
+                </div>
+
+                <!-- Aba Feed (Alojamento) -->
+                <div id="tab-feed" style="display:block;">
+                    <div class="glass" style="padding:15px; border-radius:12px; margin-bottom:20px;">
+                        <textarea id="feed-post-text" placeholder="Grite alguma coisa para os outros guerreiros ou mande suas dúvidas..." rows="3" style="width:100%; background:var(--bg-dark); border:var(--border-soft); border-radius:8px; padding:15px; color:var(--text-main); font-family:var(--font-body); resize:none; font-size:13px;"></textarea>
+                        <button class="btn-primary" onclick="app.postToFeed('normal')" style="margin-top:10px; padding:12px; font-size:13px;" id="btn-feed-post"><i class="fa-solid fa-bullhorn"></i> DEIXAR MENSAGEM AOS COMPANHEIROS</button>
+                    </div>
+
+                    <div id="feed-list" style="display:flex; flex-direction:column; gap:0;">
+                         <p style="text-align:center; color:var(--text-muted); font-size:12px; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Conectando à Rádio Base...</p>
+                    </div>
+                </div>
+
+                <!-- Aba Rank (Leaderboard) -->
+                <div id="tab-rank" style="display:none;">
+                    <div class="glass" style="padding:15px; border-radius:12px; margin-bottom:20px; text-align:center;">
+                        <p style="font-size:12px; color:var(--text-muted);">Os 50 guerreiros mais consistentes lideram o projeto.</p>
+                    </div>
+
+                    <div id="rank-list" style="display:flex; flex-direction:column; gap:0;">
+                        <p style="text-align:center; color:var(--text-muted); font-size:12px; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Carregando Radar Militar...</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MODAL SUPORTE + UPSELL GRUPO VIP -->
+        <div id="modal-suporte" class="modal">
+            <div class="modal-content-wrap">
+                <div class="modal-header">
+                    <button class="back-btn" onclick="app.closeModal('modal-suporte')"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h3 style="color:var(--text-main); font-family:var(--font-heading);">CENTRAL DE SUPORTE</h3>
+                </div>
+
+                <!-- CARD UPSELL GRUPO VIP -->
+                <div style="border-radius:16px; overflow:hidden; margin-bottom:20px; border: 1px solid rgba(37, 211, 102, 0.4); background: linear-gradient(135deg, rgba(37,211,102,0.08) 0%, rgba(0,0,0,0) 100%);">
+                    <div style="background: linear-gradient(135deg, #128C7E, #25D366); padding: 20px; text-align:center;">
+                        <i class="fa-solid fa-star" style="color:#FFD700; font-size:28px; margin-bottom:8px; display:block;"></i>
+                        <h4 style="color:#fff; font-family:var(--font-heading); font-size:18px; letter-spacing:1px; margin:0;">GRUPO VIP DO TAF</h4>
+                        <p style="color:rgba(255,255,255,0.85); font-size:12px; margin-top:4px;">Acesso Exclusivo — Em Breve</p>
+                    </div>
+                    <div style="padding:20px;">
+                        <p style="font-size:13px; color:var(--text-muted); line-height:1.7; margin-bottom:16px;">
+                            🎯 Entre para o <strong style="color:var(--text-main);">Grupo Fechado de Elite</strong> com acesso direto ao <strong style="color:#25D366;">Mestre Ricardo</strong>, dicas exclusivas, mentorias ao vivo e apoio de outros recrutas da sua turma.
+                        </p>
+                        <ul style="list-style:none; padding:0; margin:0 0 20px 0; display:flex; flex-direction:column; gap:10px;">
+                            <li style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-check" style="color:#25D366; margin-right:8px;"></i>Respostas diretas do Mestre Ricardo</li>
+                            <li style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-check" style="color:#25D366; margin-right:8px;"></i>Treinos e dicas extras exclusivos</li>
+                            <li style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-check" style="color:#25D366; margin-right:8px;"></i>Comunidade de guerreiros reais</li>
+                            <li style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-check" style="color:#25D366; margin-right:8px;"></i>Acesso antecipado a novos conteúdos</li>
+                        </ul>
+                        <button 
+                            id="btn-grupo-vip"
+                            onclick="window.open('#LINK_DO_GRUPO_AQUI', '_blank')"
+                            style="width:100%; padding:16px; background: linear-gradient(135deg, #128C7E, #25D366); color:#fff; border:none; border-radius:12px; font-family:var(--font-heading); font-size:15px; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; opacity:0.6; pointer-events:none;">
+                            <i class="fa-brands fa-whatsapp" style="font-size:20px;"></i>
+                            EM BREVE — QUERO ENTRAR NO VIP
+                        </button>
+                        <p style="text-align:center; font-size:10px; color:var(--text-muted); margin-top:10px;">🔒 Vagas limitadas. Acesso liberado em breve.</p>
+                    </div>
+                </div>
+
+                <!-- SUPORTE DIRETO (FALLBACK) -->
+                <div class="glass" style="padding:20px; border-radius:16px; border-left: 3px solid var(--primary);">
+                    <h4 style="color:var(--text-main); font-size:14px; margin-bottom:12px;"><i class="fa-solid fa-headset"></i> SUPORTE TÉCNICO DIRETO</h4>
+                    <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:16px;">Problemas com a plataforma ou dúvidas urgentes? Fale direto com o suporte.</p>
+                    <button 
+                        onclick="window.open('https://wa.me/5511976239181', '_blank')"
+                        style="width:100%; padding:14px; background:transparent; color:var(--primary); border: 1px solid var(--primary); border-radius:10px; font-family:var(--font-heading); font-size:13px; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        FALAR COM SUPORTE
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- /APP WRAPPER -->
+
+    <script src="script.js?v=3"></script>
+</body>
+</html>

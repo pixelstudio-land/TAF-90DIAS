@@ -1,0 +1,333 @@
+/* --- RESET & VARIÁVEIS (DESIGN SPORT PREMIUM / DARK & LIGHT) --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;700&display=swap');
+
+:root {
+    /* MODO ESCURO (Padrão) - Vibe Esportiva Profissional */
+    --bg-dark: #0f172a; /* Slate Escuro */
+    --bg-card: rgba(30, 41, 59, 0.6); 
+    --bg-card-solid: #1e293b;
+    
+    --primary: #3b82f6; /* Azul Sport */
+    --primary-glow: rgba(59, 130, 246, 0.5);
+    --primary-btn: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    
+    --secondary: #38bdf8;        
+    --success: #10b981;          
+    --danger: #f43f5e; /* Rosa escuro tático, menos gritante que vermelho puto */
+    --gold: #f59e0b; /* Rank Superior */
+    
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    --border-soft: 1px solid rgba(255, 255, 255, 0.1);
+    --shadow-card: 0 10px 30px rgba(0,0,0,0.4);
+    
+    --glass-blur: 16px;
+    --font-heading: 'Oswald', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+[data-theme="light"] {
+    /* MODO CLARO - Vibe Clean/Clínica Esportiva */
+    --bg-dark: #f8fafc; /* Slate Extra Claro */
+    --bg-card: rgba(255, 255, 255, 0.8); 
+    --bg-card-solid: #ffffff;
+    
+    --primary: #2563eb; 
+    --primary-glow: rgba(37, 99, 235, 0.3);
+    --primary-btn: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    
+    --secondary: #0284c7;        
+    --success: #059669;          
+    --danger: #e11d48;
+    --gold: #d97706;
+    
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    
+    --border-soft: 1px solid rgba(0, 0, 0, 0.08);
+    --shadow-card: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background-color 0.4s, color 0.4s;
+    display: flex;
+    justify-content: center;
+}
+
+/* CONTAINER PRINCIPAL RESPONSIVO */
+.app-wrapper {
+    width: 100%;
+    max-width: 480px; /* Mobile padrão no centro */
+    height: 100vh;
+    position: relative;
+    background-color: var(--bg-dark);
+    overflow: hidden;
+    transition: 0.4s;
+}
+
+/* LUZES AMBIENTES PARA GLASSMORPHISM */
+.ambient-glow {
+    position: absolute; width: 350px; height: 350px;
+    border-radius: 50%; filter: blur(80px); -webkit-filter: blur(80px);
+    z-index: 0; opacity: 0.4; pointer-events: none;
+    animation: floatGlow 12s infinite alternate ease-in-out;
+}
+.ambient-glow.blue { background: var(--primary); top: -5%; left: -20%; }
+.ambient-glow.cyan { background: var(--secondary); bottom: 10%; right: -20%; animation-delay: -5s; }
+.ambient-glow.green { background: var(--success); top: 30%; left: -10%; opacity: 0.2; animation-delay: -3s; }
+
+[data-theme="light"] .ambient-glow { opacity: 0.15; filter: blur(100px); }
+
+@keyframes floatGlow {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(40px, 30px) scale(1.1); }
+}
+
+/* Utilitário Glassmorphism */
+.glass {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: var(--border-soft);
+    box-shadow: var(--shadow-card);
+    transition: 0.3s;
+}
+
+/* --- TELAS (SPA) --- */
+.screen {
+    display: none; height: 100%; width: 100%;
+    flex-direction: column; padding: 24px;
+    overflow-y: auto; overflow-x: hidden;
+    padding-bottom: 80px;
+    position: absolute; top:0; left:0;
+    z-index: 10;
+}
+.screen.active { display: flex; animation: slideInApp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes slideInApp { from { opacity: 0; transform: scale(0.97) translateY(15px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+/* --- TELA 1: LOGIN --- */
+#screen-login { justify-content: center; align-items: center; }
+.login-container { width: 100%; text-align: center; padding: 30px 20px; border-radius: 20px; }
+
+.tactical-logo {
+    display: inline-block; padding: 15px 30px; border-radius: 14px; margin-bottom: 35px;
+    background: linear-gradient(145deg, rgba(59,130,246,0.1) 0%, transparent 100%);
+    border: 1px solid rgba(59,130,246,0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+.logo-top { display: block; font-size: 11px; font-weight: 600; letter-spacing: 6px; color: var(--text-muted); text-transform: uppercase; margin-bottom: -5px; }
+.logo-main { display: block; font-family: var(--font-heading); font-size: 58px; line-height: 1; font-weight: 700; color: var(--text-main); letter-spacing: 2px; }
+.logo-line { width: 100%; height: 3px; background: var(--primary-btn); margin-top: 5px; border-radius: 2px; }
+
+.input-group { margin-bottom: 20px; text-align: left; }
+.input-group label { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+input, select, textarea {
+    width: 100%; padding: 16px;
+    background: var(--bg-card-solid); border: var(--border-soft);
+    color: var(--text-main); font-size: 15px; font-weight: 500;
+    border-radius: 10px; outline: none; transition: 0.3s;
+}
+[data-theme="light"] input, [data-theme="light"] select, [data-theme="light"] textarea { background: rgba(0,0,0,0.02); }
+input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+
+/* BOTOES DE ALTA CONVERSÃO */
+.btn-primary, .btn-success {
+    width: 100%; padding: 18px; color: white; border: none;
+    font-family: var(--font-heading); font-size: 16px; text-transform: uppercase; letter-spacing: 1.5px;
+    cursor: pointer; border-radius: 10px; font-weight: 700;
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-primary { background: var(--primary-btn); box-shadow: 0 8px 25px var(--primary-glow); }
+.btn-success { background: linear-gradient(135deg, var(--success) 0%, #059669 100%); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); }
+
+.btn-primary:active, .btn-success:active { transform: translateY(2px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+/* --- DASHBOARD E HEADER --- */
+.app-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 25px; padding-bottom: 15px; border-bottom: var(--border-soft);
+}
+/* AVATAR DO HEADER */
+.user-info { display: flex; align-items: center; gap: 15px; }
+.user-avatar-btn {
+    width: 50px; height: 50px; border-radius: 50%;
+    background-color: var(--bg-card-solid); border: 2px solid var(--primary);
+    background-size: cover; background-position: center;
+    cursor: pointer; flex-shrink: 0; position: relative;
+    box-shadow: 0 5px 15px var(--primary-glow); transition: 0.3s;
+}
+.user-avatar-btn::after {
+    content:'🔥'; position:absolute; bottom:-5px; right:-5px; font-size:14px; background:var(--bg-card-solid); border-radius:50%; padding:2px;
+}
+.user-avatar-btn:active { transform: scale(0.9); }
+
+.user-info h3 { font-family: var(--font-heading); font-size: 20px; font-weight: 600; display:flex; flex-direction:column; gap:4px; }
+.rank-badge {
+    background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59,130,246,0.3);
+    padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 1.5px; display: inline-block; line-height:1; max-width: fit-content;
+}
+.header-actions { display: flex; gap: 10px; }
+.settings-btn { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg-card-solid); font-size: 14px; color: var(--text-muted); cursor: pointer; border: var(--border-soft); box-shadow: var(--shadow-card); transition: 0.2s;}
+.settings-btn:hover { color: var(--primary); }
+
+/* BOTÃO GIGANTE DA COMUNIDADE (QUARTEL GENERAL) */
+.community-launcher {
+    background: linear-gradient(45deg, var(--bg-card-solid) 0%, rgba(59, 130, 246, 0.1) 100%);
+    border: 1px solid var(--primary); border-radius: 12px; padding: 15px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; margin-bottom: 25px; transition: 0.3s;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+.community-launcher:active { transform: scale(0.97); }
+.community-launcher-content { display:flex; align-items:center; gap: 12px; }
+.co-icon { width:40px; height:40px; border-radius:10px; background:var(--primary-btn); display:flex; align-items:center; justify-content:center; color:white; font-size:18px; }
+
+/* PROGRESSO MUNDIAL */
+.progress-labels { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+.progress-bar-bg { height: 8px; background: var(--bg-card-solid); border-radius: 4px; overflow: hidden; border: var(--border-soft); }
+.progress-bar-fill { height: 100%; background: var(--primary-btn); box-shadow: 0 0 10px var(--primary-glow); transition: width 1.5s ease-out; }
+
+/* CARD MISSÃO DO DIA (SPORT VIBE) */
+.mission-card {
+    position: relative; padding: 25px 20px; border-radius: 16px; margin: 25px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; transition: 0.3s;
+    background: var(--bg-card-solid);
+    border: var(--border-soft); border-left: 4px solid var(--danger);
+    box-shadow: var(--shadow-card); overflow: hidden;
+}
+.mission-card:active { transform: scale(0.97); }
+.mission-status { position: absolute; top: 15px; right: 15px; width: 10px; height: 10px; background: var(--danger); border-radius: 50%; }
+.mission-label { font-size: 10px; color: var(--danger); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+.mission-content h2 { font-family: var(--font-heading); font-size: 26px; margin: 6px 0; font-weight: 700; text-transform: uppercase; color: var(--text-main); }
+.mission-content p { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+
+/* FERRAMENTAS */
+.tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+.tool-card {
+    background: var(--bg-card); border: var(--border-soft); padding: 20px 10px;
+    border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s;
+    backdrop-filter: blur(var(--glass-blur)); display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.tool-card:active { transform: scale(0.95); }
+.tool-card i { font-size: 24px; color: var(--text-muted); }
+.tool-card span { font-family: var(--font-heading); font-size: 13px; font-weight: 500; color: var(--text-main);}
+
+/* --- MODAIS E LAYOUTS SOCIAIS (CRIADOS FASE 6) --- */
+.modal {
+    display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-dark); z-index: 2000; padding: 0; overflow-y: auto; overflow-x: hidden;
+    animation: slideUpModal 0.4s forwards;
+}
+.modal.active { display: block; }
+@keyframes slideUpModal { from { opacity: 0; transform: translateY(100vh); } to { opacity: 1; transform: translateY(0); } }
+
+.modal-content-wrap { min-height: 100%; padding: 25px; padding-bottom: 100px;
+    background: linear-gradient(180deg, transparent 0%, var(--bg-card-solid) 20%);
+}
+.modal-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: var(--border-soft); padding-bottom: 20px;}
+.back-btn { width: 35px; height: 35px; border-radius: 50%; background: var(--bg-card-solid); border: var(--border-soft); color: var(--text-main); font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+
+/* FEED DE COMUNIDADE (ALOJAMENTO) */
+.social-tabs { display:flex; background:var(--bg-card-solid); border-radius:10px; overflow:hidden; border:var(--border-soft); margin-bottom:20px; }
+.s-tab { flex:1; padding:15px; text-align:center; font-size:13px; font-weight:600; color:var(--text-muted); cursor:pointer; transition:0.3s; }
+.s-tab.active { background:var(--primary-glow); color:var(--primary); }
+
+.feed-card {
+    background: var(--bg-card-solid); border: var(--border-soft); padding: 20px;
+    border-radius: 14px; margin-bottom: 15px; display:flex; flex-direction:column; gap:12px;
+}
+.feed-header { display:flex; align-items:flex-start; gap:12px; }
+.feed-avatar { width: 45px; height: 45px; border-radius: 50%; background-color: var(--bg-dark); background-size: cover; background-position: center; border:2px solid var(--text-muted); }
+.feed-info { flex:1; display:flex; flex-direction:column; gap:2px; }
+.feed-info strong { font-size: 15px; color: var(--text-main); }
+.feed-info span { font-size: 11px; color: var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
+
+.feed-content { font-size: 14px; line-height: 1.5; color: var(--text-main); }
+.feed-content.victory { color: var(--success); font-weight:600; padding:10px; background:rgba(16,185,129,0.1); border-radius:8px; border-left:3px solid var(--success); font-style:italic;}
+
+.feed-footer { display:flex; gap:15px; border-top:var(--border-soft); padding-top:12px; margin-top:5px; }
+.feed-action { color:var(--text-muted); font-size:13px; cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600; transition:0.2s;}
+.feed-action:hover { color:var(--primary); }
+.feed-action.liked { color:var(--primary); }
+
+/* RANKING GLOBAL (LEADERBOARD) */
+.rank-card {
+    display:flex; align-items:center; gap:15px; padding:15px;
+    background:var(--bg-card-solid); border-radius:12px; margin-bottom:10px;
+    border:var(--border-soft); position:relative; overflow:hidden;
+}
+.rank-card .position { font-family:var(--font-heading); font-size:24px; color:var(--text-muted); width:30px; text-align:center; }
+.rank-card.top1 .position { color: var(--gold); }
+.rank-card.top1 { border-color:var(--gold); border-left: 4px solid var(--gold); background: linear-gradient(90deg, rgba(217, 119, 6, 0.1) 0%, transparent 100%);}
+.rank-card .stats { margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; }
+.rank-card .dias { font-size:18px; font-family:var(--font-heading); color:var(--primary); }
+.rank-card .txt { font-size:10px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; }
+
+/* LISTA EXERCÍCIO */
+details.exercise-detail { background: var(--bg-card-solid); margin-bottom: 12px; border-radius: 10px; border: var(--border-soft); border-left: 3px solid var(--primary); transition: 0.3s; overflow: hidden; box-shadow: var(--shadow-card); }
+details.exercise-detail summary { padding: 16px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px; color: var(--text-main); }
+details.exercise-detail summary::-webkit-details-marker { display: none; }
+.technique-box { padding: 0 16px 16px 16px; }
+.technique-desc { background: var(--bg-dark); padding: 12px; border-radius: 6px; color: var(--text-muted); font-size: 13px; line-height: 1.5; border-left: 2px solid var(--secondary); }
+.video-container { width: 100%; position: relative; overflow: hidden; margin-top: 15px; border-radius: 8px; background: #000; }
+.video-container.horizontal { aspect-ratio: 16 / 9; }
+.video-container.vertical { aspect-ratio: 9 / 16; max-height: 75vh; margin-left: auto; margin-right: auto; max-width: 400px; }
+.video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+/* CALCULADORA */
+.result-box { background: rgba(16, 185, 129, 0.1); border: 1px dashed rgba(16, 185, 129, 0.4); padding: 25px; border-radius: 10px; margin-top: 25px; }
+#score-text { font-family: var(--font-heading); font-size: 36px; color: var(--text-main); margin-bottom: 5px; }
+#score-status { font-weight: 700; font-size: 15px; letter-spacing: 2px; text-transform: uppercase; }
+
+/* ADMIN - LIMPEZA */
+.admin-user-card { background: var(--bg-card-solid); padding: 15px; border-radius: 8px; border: var(--border-soft); display: flex; align-items: center; gap:10px; box-shadow: var(--shadow-card); }
+.admin-user-card .info p { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+
+/* DESKTOP MEDIA QUERY (A Grande Mudança de Layout) */
+@media (min-width: 900px) {
+    /* No Desktop, permitimos que a Main View expanda e crie um Grid Lateral! */
+    .app-wrapper {
+        max-width: 1100px;
+        margin: 40px auto; /* Afasta das bordas do monitor */
+        height: calc(100vh - 80px); /* Não ocupa a tela inteira */
+        border-radius: 20px;
+        border: var(--border-soft);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .screen { padding: 40px; }
+    
+    /* Quando na Dashboard... vamos fazer 2 colunas */
+    #screen-dashboard .screen-content-wrapper {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+    .tools-grid { display: flex; flex-direction: column; gap: 15px; } /* Empilha ao lado no sidebar */
+    .motivation-banner { margin-top: 0; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-card-solid); border: var(--border-soft); border-radius: 16px; box-shadow: var(--shadow-card);}
+    
+    /* Modais abrem como janelas flutuantes em vez de cobrir a tela inteira */
+    .modal {
+        background: rgba(0,0,0,0.7); /* Fundo pretop trans */
+        backdrop-filter: blur(10px);
+        align-items: center; justify-content: center;
+        display: none; padding: 40px;
+    }
+    .modal.active { display: flex; }
+    .modal-content-wrap {
+        width: 600px; min-height: auto; max-height: 90vh;
+        border-radius: 20px; overflow-y: auto;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        border: var(--border-soft);
+        background: var(--bg-card-solid);
+    }
+}

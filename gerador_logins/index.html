@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Acessos - TAF</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #3b82f6;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 40%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--primary);
+            color: #34d399;
+        }
+
+        .message.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: #fca5a5;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px;
+            font-size: 12px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- LOGIN MASTER PARA ACESSO AO PAINEL -->
+        <div id="screen-gate" class="card screen active">
+            <h1>Acesso Restrito</h1>
+            <p class="subtitle">Painel exclusivo para Leonardo e Ricardo.</p>
+
+            <div class="form-group">
+                <label>Senha do Sistema</label>
+                <input type="password" id="master-pass" placeholder="Digite a senha..."
+                    onkeyup="if(event.key === 'Enter') checkGate()">
+            </div>
+
+            <button onclick="checkGate()">Acessar Gerador</button>
+            <div id="gate-msg" class="message error" style="display:none; margin-top: 15px;">Senha incorreta.</div>
+        </div>
+
+        <!-- PAINEL DE GERAÇÃO DE CONTAS -->
+        <div id="screen-generator" class="card screen">
+            <h1>Criar Novo Aluno</h1>
+            <p class="subtitle">Cadastre um novo recruta no TAF 90 Dias.</p>
+
+            <div class="form-group">
+                <label>Nome do Aluno (Visualização Interna)</label>
+                <input type="text" id="novo-nome" placeholder="Ex: Sargento Silva" required>
+            </div>
+
+            <div class="form-group">
+                <label>E-mail de Login do Aluno</label>
+                <input type="email" id="novo-email" placeholder="Ex: silva@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>Senha Inicial (Sugerido: TAF123456)</label>
+                <input type="text" id="nova-senha" value="TAF123456" required>
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">Mínimo de 6 caracteres
+                    recomendados.</p>
+            </div>
+
+            <button id="btn-criar" onclick="criarAluno()">Gerar Login Militar</button>
+
+            <div id="result-box" style="display: none; margin-top: 20px;">
+                <div id="create-msg" class="message"></div>
+
+                <div id="share-box"
+                    style="display:none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px dashed rgba(255,255,255,0.2);">
+                    <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 5px;">Dados para Enviar ao Aluno:</p>
+                    <p style="font-family: monospace; font-size: 14px; color: #fff; white-space: pre-wrap;"
+                        id="share-text"></p>
+                    <button class="copy-btn" onclick="copiarMensagem()">
+                        Copiar Mensagem Padrão
+                    </button>
+                </div>
+
+                <button onclick="resetarFormulario()"
+                    style="background: transparent; border: 1px solid var(--text-muted); margin-top: 15px; color: var(--text-light);">Criar
+                    Outro Aluno</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Configurações do Supabase (as mesmas do projeto oficial)
+        const SUPABASE_URL = 'https://qqlljfoqtlqoxzppmvqx.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxbGxqZm9xdGxxb3h6cHBtdnF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4MDc1NDIsImV4cCI6MjA5MDM4MzU0Mn0.IG9O1wCJh07fwUANKaJCmsBV1naRLkQ--0a9axBWU_U';
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // A senha de acesso (Leonardo/Ricardo)
+        const MASTER_PASSWORD = '123456';
+
+        function checkGate() {
+            const pass = document.getElementById('master-pass').value;
+            const msg = document.getElementById('gate-msg');
+
+            if (pass === MASTER_PASSWORD) {
+                msg.style.display = 'none';
+                document.getElementById('screen-gate').classList.remove('active');
+                document.getElementById('screen-generator').classList.add('active');
+            } else {
+                msg.style.display = 'block';
+                msg.innerText = 'Senha incorreta. Acesso negado.';
+            }
+        }
+
+        async function criarAluno() {
+            const nome = document.getElementById('novo-nome').value.trim();
+            const email = document.getElementById('novo-email').value.trim();
+            const senha = document.getElementById('nova-senha').value.trim();
+
+            const btn = document.getElementById('btn-criar');
+            const resultBox = document.getElementById('result-box');
+            const msg = document.getElementById('create-msg');
+            const shareBox = document.getElementById('share-box');
+
+            if (!nome || !email || !senha) {
+                alert('Preencha todos os campos.');
+                return;
+            }
+            if (senha.length < 6) {
+                alert('A senha deve ter pelo menos 6 caracteres.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = 'CRIANDO NO BANCO DE DADOS...';
+            resultBox.style.display = 'block';
+            msg.className = 'message';
+            msg.style.display = 'none';
+            shareBox.style.display = 'none';
+
+            try {
+                // Tenta criar o usuário pelo Supabase Client (usando Anon Key)
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: senha,
+                    options: {
+                        data: {
+                            nome: nome // Nome será inserido nos metadata public
+                        }
+                    }
+                });
+
+                if (error) throw error;
+
+                if (data && data.user) {
+                    msg.className = 'message success';
+                    msg.innerHTML = `✅ Recruta <b>${nome}</b> cadastrado com sucesso!`;
+                    msg.style.display = 'block';
+
+                    document.getElementById('share-text').innerText = `Seu acesso ao App TAF 90 Dias está liberado.\n\nLink do App: [ADICIONE SEU LINK AQUI]\nLogin: ${email}\nSenha: ${senha}\n\nBom treino!`;
+                    shareBox.style.display = 'block';
+                    btn.style.display = 'none';
+
+                    // Evita que a sessão recém-criada interfira com outras abas
+                    await supabaseClient.auth.signOut();
+                } else if (!error && !data.user) {
+                    msg.className = 'message success';
+                    msg.innerHTML = `ℹ️ O servidor recebeu o pedido, mas exigiu validação por e-mail.`;
+                    msg.style.display = 'block';
+                }
+
+            } catch (err) {
+                msg.className = 'message error';
+
+                let userFriendlyErro = err.message;
+                if (userFriendlyErro.includes("already registered") || userFriendlyErro.includes("User already exists")) {
+                    userFriendlyErro = "Esse e-mail já existe no banco de dados.";
+                }
+
+                msg.innerHTML = '❌ Erro ao criar conta: ' + userFriendlyErro;
+                msg.style.display = 'block';
+                btn.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Gerar Login Militar';
+            }
+        }
+
+        function copiarMensagem() {
+            const textToCopy = document.getElementById('share-text').innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('Copiado para a área de transferência! Cole no WhatsApp.');
+            }).catch(err => {
+                alert('Falha ao copiar texto: ', err);
+            });
+        }
+
+        function resetarFormulario() {
+            document.getElementById('novo-nome').value = '';
+            document.getElementById('novo-email').value = '';
+            document.getElementById('nova-senha').value = 'TAF123456';
+
+            document.getElementById('result-box').style.display = 'none';
+            document.getElementById('btn-criar').style.display = 'block';
+            document.getElementById('share-box').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
